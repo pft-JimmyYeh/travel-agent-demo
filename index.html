@@ -1,0 +1,238 @@
+<!doctype html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Travel Agent Fake Prototype</title>
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <main class="app-shell">
+      <section class="top-banner" aria-label="Travel Agent">
+        <h1>Travel Agent</h1>
+        <img src="assets/travel-agent-hero.png" alt="AI travel assistant planning a Tokyo trip">
+      </section>
+
+      <section class="view planner-view" id="plannerView" aria-label="Travel planning prototype">
+        <div class="planner-grid">
+          <article class="stage-panel input-panel">
+            <header class="stage-header">
+              <div>
+                <h2>Input</h2>
+              </div>
+            </header>
+
+            <div class="field-group">
+              <label for="destination">目的地</label>
+              <input id="destination" name="destination" value="" placeholder="" autocomplete="off">
+            </div>
+
+            <div class="field-group">
+              <label>旅遊偏好</label>
+              <div class="segmented" role="group" aria-label="Travel style">
+                <button class="chip is-active" type="button" data-style="family">親子</button>
+                <button class="chip" type="button" data-style="couple">情侶</button>
+                <button class="chip" type="button" data-style="shopping">購物</button>
+                <button class="chip" type="button" data-style="food">美食</button>
+              </div>
+            </div>
+
+            <div class="field-row">
+              <div class="field-group">
+                <label for="days">天數</label>
+                <select id="days" name="days">
+                  <option selected>5天4夜</option>
+                  <option>4天3夜</option>
+                  <option>6天5夜</option>
+                </select>
+              </div>
+              <div class="field-group">
+                <label for="budget">預算</label>
+                <select id="budget" name="budget">
+                  <option selected>預算友善</option>
+                  <option>舒適平衡</option>
+                  <option>精緻放鬆</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="field-row">
+              <div class="field-group">
+                <label for="startDate">出發日期</label>
+                <input id="startDate" name="startDate" type="date" value="2026-07-15">
+              </div>
+              <div class="field-group">
+                <label for="endDate">回程日期</label>
+                <input id="endDate" name="endDate" type="date" value="2026-07-19">
+              </div>
+            </div>
+
+            <div class="field-group">
+              <label for="spotInput">想去的景點</label>
+              <textarea id="spotInput" name="spotInput" rows="4" placeholder=""></textarea>
+            </div>
+
+            <button class="primary-action" id="startPlan" type="button">開始規劃</button>
+          </article>
+        </div>
+      </section>
+
+      <section class="view agent-view is-hidden" id="agentView" aria-label="Agent analysis">
+        <article class="stage-panel agent-panel">
+          <header class="stage-header">
+            <div>
+              <h2>Agent 分析中</h2>
+            </div>
+          </header>
+
+          <div class="agent-visual" aria-hidden="true">
+            <div class="bot-face">
+              <span></span>
+              <span></span>
+            </div>
+            <div class="orbit orbit-a"></div>
+            <div class="orbit orbit-b"></div>
+          </div>
+
+          <ol class="agent-steps" id="agentSteps">
+            <li data-step="0"><span></span><strong>讀取輸入資料</strong><small>目的地、日期、偏好、想去景點</small></li>
+            <li data-step="1" class="people-step">
+              <span></span>
+              <strong>詢問人數</strong>
+              <small id="peopleSummary">等待使用者填寫幾大幾小</small>
+              <div class="people-form is-hidden" id="peopleForm">
+                <label for="adultCount">大人</label>
+                <input id="adultCount" name="adultCount" type="number" min="1" max="12" value="2">
+                <label for="childCount">小孩</label>
+                <input id="childCount" name="childCount" type="number" min="0" max="12" value="1">
+                <button class="continue-action" id="continuePeople" type="button">繼續規劃</button>
+              </div>
+            </li>
+            <li data-step="2"><span></span><strong>分析景點距離</strong><small>區域分群與移動成本</small></li>
+            <li data-step="3"><span></span><strong>安排行程順序</strong><small>親子節奏、午休與排隊時間</small></li>
+            <li data-step="4"><span></span><strong>產生推薦清單</strong><small>景點、購物、美食、交通</small></li>
+          </ol>
+        </article>
+      </section>
+
+      <section class="view result-view is-hidden" id="resultView" aria-label="Travel result page">
+        <article class="stage-panel output-panel">
+          <header class="result-nav">
+            <button class="home-button" id="homeButton" type="button" aria-label="Home 回到上一頁">Home</button>
+            <div>
+              <h2>輸出結果範例</h2>
+              <p id="result-subtitle">等待 Agent 完成規劃。</p>
+            </div>
+          </header>
+
+          <div class="result-content" id="resultContent">
+            <div class="result-title-row">
+              <div>
+                <p class="eyebrow">Generated Itinerary</p>
+                <h3 id="tripTitle">5天4夜｜東京親子之旅</h3>
+              </div>
+              <span class="budget-pill" id="budgetPill">預算友善</span>
+            </div>
+
+            <div class="tabs" role="tablist" aria-label="Result categories">
+              <button class="tab is-active" type="button" data-tab="map">景點地圖</button>
+              <button class="tab" type="button" data-tab="shopping">購物地點</button>
+              <button class="tab" type="button" data-tab="food">美食推薦</button>
+              <button class="tab" type="button" data-tab="traffic">交通建議</button>
+            </div>
+
+            <div class="result-layout">
+              <div class="timeline" id="timeline"></div>
+              <aside class="recommendations">
+                <section class="booking-panel" aria-label="Flight and hotel suggestions">
+                  <article class="booking-card">
+                    <h4>航班推薦</h4>
+                    <p><strong>TPE → NRT</strong> 08:40 - 12:55｜SkyJet SJ802</p>
+                    <p><strong>NRT → TPE</strong> 18:20 - 21:50｜SkyJet SJ817</p>
+                    <p>估計票價：NT$ 13,800 / 人</p>
+                    <button class="booking-action" id="bookFlight" type="button">訂機票</button>
+                  </article>
+                  <article class="booking-card">
+                    <h4>飯店推薦</h4>
+                    <p><strong>Ueno Garden Family Hotel</strong></p>
+                    <p>上野站步行 6 分鐘｜家庭房｜含早餐</p>
+                    <p>估計房價：NT$ 5,200 / 晚</p>
+                    <button class="booking-action" id="bookHotel" type="button">訂飯店</button>
+                  </article>
+                  <button class="summary-action" id="showSummary" type="button">查看總整理</button>
+                </section>
+                <div class="photo-wall" aria-label="Tokyo destination collage">
+                  <div class="photo-tile tile-temple"><span>淺草寺</span></div>
+                  <div class="photo-tile tile-tower"><span>晴空塔</span></div>
+                  <div class="photo-tile tile-park"><span>迪士尼</span></div>
+                  <div class="photo-tile tile-train"><span>都電</span></div>
+                </div>
+                <div class="tab-panel" id="tabPanel"></div>
+              </aside>
+            </div>
+          </div>
+
+          <div class="chat-panel is-hidden" id="chatPanel" aria-label="Agent chat">
+            <div class="chat-header">
+              <strong>Agent Chat</strong>
+              <button id="closeChat" type="button" aria-label="關閉">×</button>
+            </div>
+            <div class="chat-messages" id="chatMessages">
+              <p class="agent-message">想調整哪一段行程？</p>
+            </div>
+            <div class="chat-input-row">
+              <input id="chatInput" type="text" placeholder="" aria-label="輸入行程調整">
+              <button id="sendChat" type="button">送出</button>
+            </div>
+          </div>
+
+          <button class="floating-chat" id="openChat" type="button" aria-label="開啟 Agent Chat">
+            <span aria-hidden="true">AI</span>
+          </button>
+        </article>
+      </section>
+
+      <section class="view summary-view is-hidden" id="summaryView" aria-label="Travel booking summary">
+        <article class="stage-panel summary-panel">
+          <header class="result-nav">
+            <button class="home-button" id="summaryBackButton" type="button" aria-label="上一頁">上一頁</button>
+            <div>
+              <h2>總整理</h2>
+              <p id="summarySubtitle">機票、飯店與天數規劃</p>
+            </div>
+          </header>
+
+          <div class="summary-grid">
+            <article class="summary-card">
+              <h3>機票</h3>
+              <p id="summaryFlightStatus">已選擇航班方案</p>
+              <p>TPE → NRT｜08:40 - 12:55｜SkyJet SJ802</p>
+              <p>NRT → TPE｜18:20 - 21:50｜SkyJet SJ817</p>
+            </article>
+            <article class="summary-card">
+              <h3>飯店</h3>
+              <p id="summaryHotelStatus">已選擇飯店方案</p>
+              <p>Ueno Garden Family Hotel</p>
+              <p>家庭房｜含早餐｜上野站步行 6 分鐘</p>
+            </article>
+            <article class="summary-card">
+              <h3>天數規劃</h3>
+              <p id="summaryTripMeta">5天4夜｜東京親子之旅</p>
+              <p id="summaryPeople">2大1小</p>
+              <p id="summaryDates">2026-07-15 - 2026-07-19</p>
+              <p id="summaryAdjustment">尚未調整行程</p>
+            </article>
+            <article class="summary-card budget-summary-card">
+              <h3>預估預算</h3>
+              <p id="summaryBudgetTotal">NT$ 0</p>
+              <p id="summaryBudgetBreakdown">機票、飯店、餐飲與交通估算</p>
+            </article>
+          </div>
+
+        </article>
+      </section>
+    </main>
+
+    <script src="script.js"></script>
+  </body>
+</html>
