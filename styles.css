@@ -445,13 +445,29 @@ textarea {
   grid-template-columns: 28px 1fr;
   column-gap: 10px;
   align-items: center;
-  min-height: 56px;
-  padding: 8px 10px;
-  border: 1px solid var(--line);
+  min-height: 0;
+  max-height: 0;
+  padding: 0 10px;
+  border: 1px solid transparent;
   border-radius: 8px;
   background: #fbfdff;
+  opacity: 0;
+  overflow: hidden;
+  pointer-events: none;
+  transform: translateY(-8px);
+  visibility: hidden;
+  transition: opacity 180ms ease, transform 180ms ease, border-color 180ms ease, max-height 180ms ease, padding 180ms ease, visibility 180ms ease;
+}
+
+.agent-steps li.is-visible {
+  min-height: 56px;
+  max-height: 220px;
+  padding: 8px 10px;
+  border-color: var(--line);
   opacity: 0.58;
-  transition: opacity 180ms ease, transform 180ms ease, border-color 180ms ease;
+  pointer-events: auto;
+  transform: translateY(0);
+  visibility: visible;
 }
 
 .agent-steps li.people-step {
@@ -462,7 +478,7 @@ textarea {
 .agent-steps li.is-done {
   opacity: 1;
   border-color: #9fc2ff;
-  transform: translateX(2px);
+  transform: translateX(2px) translateY(0);
 }
 
 .agent-steps li.is-done span {
@@ -625,7 +641,6 @@ textarea {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 10px;
-  margin-bottom: 12px;
 }
 
 .booking-card,
@@ -635,6 +650,10 @@ textarea {
   border-radius: 8px;
   background: #fff;
   padding: 12px;
+}
+
+.booking-card {
+  display: grid;
 }
 
 .booking-card h4,
@@ -673,6 +692,11 @@ textarea {
   color: #fff;
   background: linear-gradient(135deg, var(--blue), var(--cyan));
   font-weight: 900;
+}
+
+.booking-action {
+  align-self: end;
+  margin-top: auto;
 }
 
 .booking-action.is-booked {
@@ -768,6 +792,7 @@ textarea {
   padding: 10px;
   border-radius: 8px;
   line-height: 1.45;
+  white-space: pre-line;
 }
 
 .agent-message {
@@ -839,48 +864,10 @@ textarea {
 }
 
 .recommendations {
-  min-width: 0;
-}
-
-.photo-wall {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  grid-template-rows: 96px 96px;
-  gap: 8px;
-  margin-bottom: 12px;
-}
-
-.photo-tile {
-  display: flex;
-  align-items: flex-end;
+  align-content: start;
+  gap: 12px;
   min-width: 0;
-  overflow: hidden;
-  border-radius: 8px;
-  padding: 9px;
-  color: #fff;
-  background: var(--blue);
-  font-weight: 900;
-  box-shadow: inset 0 -40px 42px rgba(3, 16, 44, 0.34);
-}
-
-.photo-tile span {
-  text-shadow: 0 1px 10px rgba(0, 0, 0, 0.35);
-}
-
-.tile-temple {
-  background: linear-gradient(145deg, rgba(212, 48, 52, 0.9), rgba(255, 168, 78, 0.82)), url("assets/travel-agent-hero.png") center/cover;
-}
-
-.tile-tower {
-  background: linear-gradient(145deg, rgba(20, 96, 212, 0.82), rgba(35, 198, 255, 0.7)), url("assets/travel-agent-hero.png") center/cover;
-}
-
-.tile-park {
-  background: linear-gradient(145deg, rgba(52, 90, 210, 0.82), rgba(255, 99, 160, 0.65)), url("assets/travel-agent-hero.png") center/cover;
-}
-
-.tile-train {
-  background: linear-gradient(145deg, rgba(12, 148, 122, 0.85), rgba(36, 107, 255, 0.62)), url("assets/travel-agent-hero.png") center/cover;
 }
 
 .tab-panel {
@@ -1035,10 +1022,6 @@ textarea {
     grid-template-columns: 1fr;
   }
 
-  .summary-action {
-    grid-column: auto;
-  }
-
   .mock-note {
     display: grid;
   }
@@ -1077,11 +1060,6 @@ textarea {
 
   .result-empty {
     min-height: 260px;
-  }
-
-  .photo-wall {
-    grid-template-rows: repeat(4, 86px);
-    grid-template-columns: 1fr;
   }
 
   .value-strip div {

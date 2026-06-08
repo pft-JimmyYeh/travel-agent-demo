@@ -133,6 +133,7 @@ let waitingForPeople = false;
 let flightBooked = false;
 let hotelBooked = false;
 let shibuyaSkyUpdated = false;
+let isChatComposing = false;
 
 function getTrip() {
   return styleCopy[selectedStyle];
@@ -206,7 +207,7 @@ function showPlannerView() {
   plannerView.classList.remove("is-hidden");
   startPlan.disabled = false;
   startPlan.textContent = "開始規劃";
-  agentSteps.forEach((step) => step.classList.remove("is-active", "is-done"));
+  resetAgentSteps();
   peopleForm.classList.add("is-hidden");
   waitingForPeople = false;
   window.scrollTo({ top: 0, behavior: "smooth" });
@@ -244,12 +245,12 @@ async function runPlanning() {
   startPlan.disabled = true;
   startPlan.textContent = "Agent 規劃中";
   resultSubtitle.textContent = "Agent 正在整理輸入資料。";
-  agentSteps.forEach((step) => step.classList.remove("is-active", "is-done"));
+  resetAgentSteps();
   peopleForm.classList.add("is-hidden");
   peopleSummary.textContent = "等待使用者填寫幾大幾小";
 
   await completeAgentStep(0);
-  agentSteps[1].classList.add("is-active");
+  agentSteps[1].classList.add("is-visible", "is-active");
   peopleForm.classList.remove("is-hidden");
   startPlan.textContent = "等待人數";
   isPlanning = false;
@@ -257,9 +258,13 @@ async function runPlanning() {
   adultCount.focus();
 }
 
+function resetAgentSteps() {
+  agentSteps.forEach((step) => step.classList.remove("is-visible", "is-active", "is-done"));
+}
+
 function completeAgentStep(index) {
   return new Promise((resolve) => {
-    agentSteps[index].classList.add("is-active");
+    agentSteps[index].classList.add("is-visible", "is-active");
     window.setTimeout(() => {
       agentSteps[index].classList.remove("is-active");
       agentSteps[index].classList.add("is-done");
@@ -342,6 +347,15 @@ function closeAgentChat() {
   chatPanel.classList.add("is-hidden");
 }
 
+function shouldSuggestShibuyaSkyCorrection(request) {
+  const normalized = request
+    .toLowerCase()
+    .replace(/[\s._-]+/g, " ")
+    .trim();
+  if (/(^|[^a-z])shibuya sky([^a-z]|$)/.test(normalized)) return false;
+  return /shibu|sky|澀谷|涩谷|涉谷/i.test(request);
+}
+
 function sendAgentChat() {
   if (sendChat.disabled) return;
   const request = chatInput.value.trim();
@@ -352,12 +366,15 @@ function sendAgentChat() {
   chatInput.value = "";
   sendChat.disabled = true;
   addChatMessage(request, "user-message");
+  if (shouldSuggestShibuyaSkyCorrection(request)) {
+    addChatMessage("你提到的應該是 Shibuya sky", "agent-message");
+  }
   addChatMessage("正在更新行程規劃...", "agent-message");
   window.setTimeout(() => {
     shibuyaSkyUpdated = true;
     renderResults();
     renderSummary();
-    addChatMessage("已更新：SHIBUYA SKY 有名的在他的夜景, 我幫你安排在傍晚前往, 可以同時欣賞到傍晚跟晚上的景色。", "agent-message");
+    addChatMessage("已更新：\nSHIBUYA SKY 有名的在他的夜景, 我幫你安排在 Day 4 傍晚前往, 可以同時欣賞到傍晚跟晚上的景色。", "agent-message");
     sendChat.disabled = false;
   }, 1200);
 }
@@ -400,8 +417,15 @@ showSummary.addEventListener("click", showSummaryView);
 openChat.addEventListener("click", openAgentChat);
 closeChat.addEventListener("click", closeAgentChat);
 sendChat.addEventListener("click", sendAgentChat);
+chatInput.addEventListener("compositionstart", () => {
+  isChatComposing = true;
+});
+chatInput.addEventListener("compositionend", () => {
+  isChatComposing = false;
+});
 chatInput.addEventListener("keydown", (event) => {
-  if (event.key === "Enter") {
+  if (event.key === "Enter" && !event.isComposing && !isChatComposing && event.keyCode !== 229) {
+    event.preventDefault();
     sendAgentChat();
   }
 });
