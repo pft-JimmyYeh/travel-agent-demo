@@ -9,11 +9,18 @@
   <body>
     <main class="app-shell">
       <section class="top-banner" aria-label="Travel Agent">
-        <h1>Travel Agent</h1>
+        <h1>旅行顧問</h1>
         <img src="assets/travel-agent-hero.png" alt="AI travel assistant planning a Tokyo trip">
       </section>
 
-      <section class="view planner-view" id="plannerView" aria-label="Travel planning prototype">
+      <section class="view initial-loading-view" id="initialLoadingView" aria-label="Preparing travel planner" aria-live="polite">
+        <div class="initial-loading-panel">
+          <div class="loader-dot" aria-hidden="true"></div>
+          <p>正在準備旅遊規劃工具...</p>
+        </div>
+      </section>
+
+      <section class="view planner-view is-hidden" id="plannerView" aria-label="Travel planning prototype">
         <div class="planner-grid">
           <article class="stage-panel input-panel">
             <header class="stage-header">

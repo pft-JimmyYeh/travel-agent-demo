@@ -38,7 +38,7 @@ button {
   width: min(1440px, 100%);
   margin: 0 auto;
   min-height: 100vh;
-  padding: 26px clamp(16px, 3vw, 42px) 28px;
+  padding: 18px clamp(16px, 3vw, 42px) 16px;
 }
 
 .hero-band {
@@ -59,7 +59,7 @@ button {
   position: relative;
   display: grid;
   align-items: center;
-  min-height: 150px;
+  min-height: 112px;
   overflow: hidden;
   border: 1px solid rgba(189, 212, 255, 0.72);
   border-radius: 8px;
@@ -71,9 +71,9 @@ button {
   position: relative;
   z-index: 2;
   margin: 0;
-  padding: clamp(20px, 4vw, 42px);
+  padding: clamp(16px, 3vw, 30px);
   color: var(--ink);
-  font-size: clamp(2.4rem, 5vw, 4.6rem);
+  font-size: clamp(2.2rem, 4.4vw, 4rem);
   text-shadow: 0 2px 16px rgba(255, 255, 255, 0.82);
 }
 
@@ -160,12 +160,37 @@ h1 {
 }
 
 .view {
-  margin-top: 18px;
+  margin-top: 14px;
+}
+
+.initial-loading-view {
+  display: grid;
+  place-items: center;
+}
+
+.initial-loading-panel {
+  display: grid;
+  place-items: center;
+  gap: 14px;
+  width: min(760px, 100%);
+  min-height: 220px;
+  border: 1px solid rgba(198, 217, 255, 0.92);
+  border-radius: 8px;
+  background: var(--panel);
+  box-shadow: 0 16px 42px rgba(23, 71, 163, 0.1);
+  padding: 26px;
+  text-align: center;
+}
+
+.initial-loading-panel p {
+  margin: 0;
+  color: var(--muted);
+  font-weight: 800;
 }
 
 .planner-grid {
   display: grid;
-  grid-template-columns: minmax(320px, 760px);
+  grid-template-columns: minmax(320px, 1060px);
   gap: 20px;
   align-items: stretch;
   justify-content: center;
@@ -178,6 +203,10 @@ h1 {
   background: var(--panel);
   box-shadow: 0 16px 42px rgba(23, 71, 163, 0.1);
   padding: 18px;
+}
+
+.planner-view .input-panel {
+  width: 100%;
 }
 
 .stage-header {
@@ -367,6 +396,57 @@ textarea {
 .primary-action:disabled {
   cursor: wait;
   opacity: 0.76;
+}
+
+@media (min-width: 880px) {
+  .planner-view .input-panel {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px 16px;
+    padding: 14px 16px;
+  }
+
+  .planner-view .stage-header,
+  .planner-view .field-row,
+  .planner-view .field-group:has(#spotInput),
+  .planner-view .primary-action {
+    grid-column: 1 / -1;
+  }
+
+  .planner-view .stage-header {
+    min-height: auto;
+  }
+
+  .planner-view .stage-header h2 {
+    margin-bottom: 0;
+  }
+
+  .planner-view .field-group {
+    margin-top: 0;
+  }
+
+  .planner-view label {
+    font-size: 0.82rem;
+  }
+
+  .planner-view input,
+  .planner-view select,
+  .planner-view textarea {
+    min-height: 38px;
+  }
+
+  .planner-view .chip {
+    min-height: 38px;
+  }
+
+  .planner-view textarea {
+    min-height: 72px;
+  }
+
+  .planner-view .primary-action {
+    min-height: 44px;
+    margin-top: 0;
+  }
 }
 
 .agent-panel {
@@ -995,7 +1075,7 @@ textarea {
 
 @media (max-width: 760px) {
   .app-shell {
-    padding: 12px;
+    padding: 8px;
   }
 
   .hero-copy,
@@ -1004,11 +1084,12 @@ textarea {
   }
 
   .top-banner {
-    min-height: 118px;
+    min-height: 90px;
   }
 
   .top-banner h1 {
-    padding: 18px;
+    padding: 14px;
+    font-size: clamp(1.9rem, 12vw, 3.2rem);
   }
 
   .quick-stats,
@@ -1020,6 +1101,59 @@ textarea {
   .summary-grid,
   .value-strip {
     grid-template-columns: 1fr;
+  }
+
+  .planner-view {
+    margin-top: 8px;
+  }
+
+  .planner-view .input-panel {
+    padding: 10px;
+  }
+
+  .planner-view .stage-header {
+    min-height: auto;
+  }
+
+  .planner-view .stage-header h2 {
+    margin-bottom: 0;
+    font-size: 1rem;
+  }
+
+  .planner-view .field-group {
+    gap: 5px;
+    margin-top: 8px;
+  }
+
+  .planner-view .field-row,
+  .planner-view .segmented {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .planner-view label {
+    font-size: 0.78rem;
+  }
+
+  .planner-view input,
+  .planner-view select,
+  .planner-view textarea {
+    min-height: 34px;
+    padding: 0 10px;
+  }
+
+  .planner-view textarea {
+    min-height: 56px;
+    padding: 8px 10px;
+  }
+
+  .planner-view .chip {
+    min-height: 34px;
+  }
+
+  .planner-view .primary-action {
+    min-height: 40px;
+    margin-top: 10px;
   }
 
   .mock-note {

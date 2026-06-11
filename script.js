@@ -84,6 +84,7 @@ const chips = document.querySelectorAll(".chip");
 const tabs = document.querySelectorAll(".tab");
 const startPlan = document.querySelector("#startPlan");
 const agentSteps = document.querySelectorAll("#agentSteps li");
+const initialLoadingView = document.querySelector("#initialLoadingView");
 const plannerView = document.querySelector("#plannerView");
 const agentView = document.querySelector("#agentView");
 const resultView = document.querySelector("#resultView");
@@ -200,7 +201,13 @@ function renderTabPanel() {
   `;
 }
 
+function showInitialPlannerView() {
+  initialLoadingView.classList.add("is-hidden");
+  plannerView.classList.remove("is-hidden");
+}
+
 function showPlannerView() {
+  initialLoadingView.classList.add("is-hidden");
   agentView.classList.add("is-hidden");
   resultView.classList.add("is-hidden");
   summaryView.classList.add("is-hidden");
@@ -432,3 +439,4 @@ chatInput.addEventListener("keydown", (event) => {
 
 renderTabPanel();
 renderBookingState();
+window.setTimeout(showInitialPlannerView, 1000);
