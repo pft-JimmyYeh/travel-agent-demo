@@ -80,6 +80,35 @@ const tabLabels = {
   traffic: "交通建議"
 };
 
+const flightOptions = {
+  skyjet: {
+    outbound: {
+      route: "TPE → NRT",
+      time: "08:40 - 12:55",
+      flight: "SkyJet SJ802"
+    },
+    inbound: {
+      route: "NRT → TPE",
+      time: "18:20 - 21:50",
+      flight: "SkyJet SJ817"
+    },
+    pricePerPerson: 13800
+  },
+  eva: {
+    outbound: {
+      route: "TPE → NRT",
+      time: "09:30 - 13:45",
+      flight: "長榮航空 BR198"
+    },
+    inbound: {
+      route: "NRT → TPE",
+      time: "20:10 - 23:05",
+      flight: "長榮航空 BR195"
+    },
+    pricePerPerson: 16800
+  }
+};
+
 const chips = document.querySelectorAll(".chip");
 const tabs = document.querySelectorAll(".tab");
 const startPlan = document.querySelector("#startPlan");
@@ -113,6 +142,8 @@ const bookHotel = document.querySelector("#bookHotel");
 const showSummary = document.querySelector("#showSummary");
 const summarySubtitle = document.querySelector("#summarySubtitle");
 const summaryFlightStatus = document.querySelector("#summaryFlightStatus");
+const summaryFlightOutbound = document.querySelector("#summaryFlightOutbound");
+const summaryFlightInbound = document.querySelector("#summaryFlightInbound");
 const summaryHotelStatus = document.querySelector("#summaryHotelStatus");
 const summaryTripMeta = document.querySelector("#summaryTripMeta");
 const summaryPeople = document.querySelector("#summaryPeople");
@@ -126,6 +157,12 @@ const chatPanel = document.querySelector("#chatPanel");
 const chatMessages = document.querySelector("#chatMessages");
 const chatInput = document.querySelector("#chatInput");
 const sendChat = document.querySelector("#sendChat");
+const flightCard = document.querySelector("#flightCard");
+const flightCardTitle = document.querySelector("#flightCardTitle");
+const hotelCardTitle = document.querySelector("#hotelCardTitle");
+const flightOutbound = document.querySelector("#flightOutbound");
+const flightInbound = document.querySelector("#flightInbound");
+const flightPrice = document.querySelector("#flightPrice");
 
 let selectedStyle = "family";
 let selectedTab = "map";
@@ -133,8 +170,16 @@ let isPlanning = false;
 let waitingForPeople = false;
 let flightBooked = false;
 let hotelBooked = false;
+let flightBookingPending = false;
+let hotelBookingPending = false;
 let shibuyaSkyUpdated = false;
 let isChatComposing = false;
+let selectedFlight = "skyjet";
+let flightBookingTimer = null;
+let hotelBookingTimer = null;
+
+const highlightDuration = 5000;
+const bookingPendingDuration = 2000;
 
 function getTrip() {
   return styleCopy[selectedStyle];
@@ -172,7 +217,7 @@ function renderResults() {
     return day;
   });
   timeline.innerHTML = days.map((day, index) => `
-    <article class="day-item">
+    <article class="day-item" data-day="${index + 1}">
       <span class="day-badge">Day ${index + 1}</span>
       <div>
         <h4>${day[0]}</h4>
@@ -201,22 +246,104 @@ function renderTabPanel() {
   `;
 }
 
+function formatFlightLine(flight, includeStrongRoute = false) {
+  const route = includeStrongRoute ? `<strong>${flight.route}</strong>` : flight.route;
+  return `${route} ${flight.time}｜${flight.flight}`;
+}
+
+function renderFlightRecommendation() {
+  const flight = flightOptions[selectedFlight];
+  flightOutbound.innerHTML = formatFlightLine(flight.outbound, true);
+  flightInbound.innerHTML = formatFlightLine(flight.inbound, true);
+  flightPrice.textContent = `估計票價：NT$ ${flight.pricePerPerson.toLocaleString("en-US")} / 人`;
+}
+
+function highlightFlightCard() {
+  flightCard.classList.remove("is-highlighted");
+  void flightCard.offsetWidth;
+  flightCard.classList.add("is-highlighted");
+  window.setTimeout(() => {
+    flightCard.classList.remove("is-highlighted");
+  }, highlightDuration);
+}
+
+function highlightDay(dayNumber) {
+  const dayItem = timeline.querySelector(`[data-day="${dayNumber}"]`);
+  if (!dayItem) return;
+  dayItem.classList.remove("is-highlighted");
+  void dayItem.offsetWidth;
+  dayItem.classList.add("is-highlighted");
+  window.setTimeout(() => {
+    dayItem.classList.remove("is-highlighted");
+  }, highlightDuration);
+}
+
+function resetChat() {
+  chatPanel.classList.add("is-hidden");
+  chatInput.value = "";
+  sendChat.disabled = false;
+  chatMessages.innerHTML = '<p class="agent-message">想調整哪一段行程？</p>';
+}
+
+function resetAppState() {
+  if (flightBookingTimer) {
+    window.clearTimeout(flightBookingTimer);
+    flightBookingTimer = null;
+  }
+  if (hotelBookingTimer) {
+    window.clearTimeout(hotelBookingTimer);
+    hotelBookingTimer = null;
+  }
+
+  selectedStyle = "family";
+  selectedTab = "map";
+  isPlanning = false;
+  waitingForPeople = false;
+  flightBooked = false;
+  hotelBooked = false;
+  flightBookingPending = false;
+  hotelBookingPending = false;
+  shibuyaSkyUpdated = false;
+  selectedFlight = "skyjet";
+
+  destinationInput.value = "";
+  daysSelect.value = "5天4夜";
+  budgetSelect.value = "預算友善";
+  startDateInput.value = "2026-07-15";
+  endDateInput.value = "2026-07-19";
+  spotInput.value = "";
+  adultCount.value = 2;
+  childCount.value = 1;
+  peopleSummary.textContent = "等待使用者填寫幾大幾小";
+  peopleForm.classList.add("is-hidden");
+
+  chips.forEach((chip) => chip.classList.toggle("is-active", chip.dataset.style === selectedStyle));
+  tabs.forEach((tab) => tab.classList.toggle("is-active", tab.dataset.tab === selectedTab));
+  startPlan.disabled = false;
+  startPlan.textContent = "開始規劃";
+  flightCard.classList.remove("is-highlighted");
+  timeline.querySelectorAll(".day-item").forEach((item) => item.classList.remove("is-highlighted"));
+
+  resetAgentSteps();
+  resetChat();
+  renderFlightRecommendation();
+  renderTabPanel();
+  renderBookingState();
+  renderResults();
+}
+
 function showInitialPlannerView() {
   initialLoadingView.classList.add("is-hidden");
   plannerView.classList.remove("is-hidden");
 }
 
 function showPlannerView() {
+  resetAppState();
   initialLoadingView.classList.add("is-hidden");
   agentView.classList.add("is-hidden");
   resultView.classList.add("is-hidden");
   summaryView.classList.add("is-hidden");
   plannerView.classList.remove("is-hidden");
-  startPlan.disabled = false;
-  startPlan.textContent = "開始規劃";
-  resetAgentSteps();
-  peopleForm.classList.add("is-hidden");
-  waitingForPeople = false;
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
@@ -306,10 +433,16 @@ async function continuePlanningAfterPeople() {
 }
 
 function renderBookingState() {
-  bookFlight.textContent = flightBooked ? "機票已加入" : "訂機票";
-  bookHotel.textContent = hotelBooked ? "飯店已加入" : "訂飯店";
+  bookFlight.textContent = flightBookingPending ? "訂單處理中 ..." : flightBooked ? "機票已預訂" : "訂機票";
+  bookHotel.textContent = hotelBookingPending ? "訂單處理中 ..." : hotelBooked ? "飯店已預訂" : "訂飯店";
+  bookFlight.disabled = flightBookingPending || flightBooked;
+  bookHotel.disabled = hotelBookingPending || hotelBooked;
+  flightCardTitle.textContent = flightBooked ? "航班確認" : "航班推薦";
+  hotelCardTitle.textContent = hotelBooked ? "飯店確認" : "飯店推薦";
   bookFlight.classList.toggle("is-booked", flightBooked);
   bookHotel.classList.toggle("is-booked", hotelBooked);
+  bookFlight.classList.toggle("is-processing", flightBookingPending);
+  bookHotel.classList.toggle("is-processing", hotelBookingPending);
 }
 
 function renderSummary() {
@@ -319,7 +452,8 @@ function renderSummary() {
   const children = Math.max(0, Number(childCount.value) || 0);
   const totalTravelers = adults + children;
   const nights = Number((daysSelect.value.match(/(\d+)夜/) || [0, 4])[1]);
-  const flightBudget = 13800 * totalTravelers;
+  const flight = flightOptions[selectedFlight];
+  const flightBudget = flight.pricePerPerson * totalTravelers;
   const hotelBudget = 5200 * nights;
   const dailyBudget = 2600 * adults * (nights + 1) + 1500 * children * (nights + 1);
   const totalBudget = flightBudget + hotelBudget + dailyBudget;
@@ -328,6 +462,8 @@ function renderSummary() {
     : "日期未指定";
   summarySubtitle.textContent = `${destination}・${trip.label}・${budgetSelect.value}`;
   summaryFlightStatus.textContent = flightBooked ? "機票已加入行程" : "機票尚未加入";
+  summaryFlightOutbound.textContent = formatFlightLine(flight.outbound);
+  summaryFlightInbound.textContent = formatFlightLine(flight.inbound);
   summaryHotelStatus.textContent = hotelBooked ? "飯店已加入行程" : "飯店尚未加入";
   summaryTripMeta.textContent = `${tripTitle.textContent || trip.title.replace("東京", destination)}｜${budgetSelect.value}`;
   summaryPeople.textContent = `${adults}大${children}小`;
@@ -363,6 +499,10 @@ function shouldSuggestShibuyaSkyCorrection(request) {
   return /shibu|sky|澀谷|涩谷|涉谷/i.test(request);
 }
 
+function shouldChangeFlightToEva(request) {
+  return /機票.*長榮|長榮.*機票|航班.*長榮|長榮.*航班|eva/i.test(request);
+}
+
 function sendAgentChat() {
   if (sendChat.disabled) return;
   const request = chatInput.value.trim();
@@ -373,6 +513,18 @@ function sendAgentChat() {
   chatInput.value = "";
   sendChat.disabled = true;
   addChatMessage(request, "user-message");
+  if (shouldChangeFlightToEva(request)) {
+    addChatMessage("正在改成長榮航空並重新估算票價...", "agent-message");
+    window.setTimeout(() => {
+      selectedFlight = "eva";
+      renderFlightRecommendation();
+      renderSummary();
+      highlightFlightCard();
+      addChatMessage("已更新：航班推薦改為長榮航空，票價已調整為 NT$ 16,800 / 人。", "agent-message");
+      sendChat.disabled = false;
+    }, 800);
+    return;
+  }
   if (shouldSuggestShibuyaSkyCorrection(request)) {
     addChatMessage("你提到的應該是 Shibuya sky", "agent-message");
   }
@@ -381,6 +533,7 @@ function sendAgentChat() {
     shibuyaSkyUpdated = true;
     renderResults();
     renderSummary();
+    highlightDay(4);
     addChatMessage("已更新：\nSHIBUYA SKY 有名的在他的夜景, 我幫你安排在 Day 4 傍晚前往, 可以同時欣賞到傍晚跟晚上的景色。", "agent-message");
     sendChat.disabled = false;
   }, 1200);
@@ -413,12 +566,26 @@ continuePeople.addEventListener("click", continuePlanningAfterPeople);
 homeButton.addEventListener("click", showPlannerView);
 summaryBackButton.addEventListener("click", showResultView);
 bookFlight.addEventListener("click", () => {
-  flightBooked = true;
+  if (flightBookingPending || flightBooked) return;
+  flightBookingPending = true;
   renderBookingState();
+  flightBookingTimer = window.setTimeout(() => {
+    flightBookingPending = false;
+    flightBooked = true;
+    flightBookingTimer = null;
+    renderBookingState();
+  }, bookingPendingDuration);
 });
 bookHotel.addEventListener("click", () => {
-  hotelBooked = true;
+  if (hotelBookingPending || hotelBooked) return;
+  hotelBookingPending = true;
   renderBookingState();
+  hotelBookingTimer = window.setTimeout(() => {
+    hotelBookingPending = false;
+    hotelBooked = true;
+    hotelBookingTimer = null;
+    renderBookingState();
+  }, bookingPendingDuration);
 });
 showSummary.addEventListener("click", showSummaryView);
 openChat.addEventListener("click", openAgentChat);
@@ -439,4 +606,5 @@ chatInput.addEventListener("keydown", (event) => {
 
 renderTabPanel();
 renderBookingState();
-window.setTimeout(showInitialPlannerView, 1000);
+renderFlightRecommendation();
+window.setTimeout(showInitialPlannerView, 1500);

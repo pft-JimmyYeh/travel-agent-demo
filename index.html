@@ -23,12 +23,6 @@
       <section class="view planner-view is-hidden" id="plannerView" aria-label="Travel planning prototype">
         <div class="planner-grid">
           <article class="stage-panel input-panel">
-            <header class="stage-header">
-              <div>
-                <h2>Input</h2>
-              </div>
-            </header>
-
             <div class="field-group">
               <label for="destination">目的地</label>
               <input id="destination" name="destination" value="" placeholder="" autocomplete="off">
@@ -88,7 +82,7 @@
         <article class="stage-panel agent-panel">
           <header class="stage-header">
             <div>
-              <h2>Agent 分析中</h2>
+              <h2>顧問分析中<span class="animated-ellipsis" aria-hidden="true"><span>.</span><span>.</span><span>.</span></span></h2>
             </div>
           </header>
 
@@ -125,9 +119,9 @@
       <section class="view result-view is-hidden" id="resultView" aria-label="Travel result page">
         <article class="stage-panel output-panel">
           <header class="result-nav">
-            <button class="home-button" id="homeButton" type="button" aria-label="Home 回到上一頁">Home</button>
+            <button class="home-button" id="homeButton" type="button" aria-label="回首頁">回首頁</button>
             <div>
-              <h2>輸出結果範例</h2>
+              <h2>輸出結果概況</h2>
               <p id="result-subtitle">等待 Agent 完成規劃。</p>
             </div>
           </header>
@@ -135,7 +129,6 @@
           <div class="result-content" id="resultContent">
             <div class="result-title-row">
               <div>
-                <p class="eyebrow">Generated Itinerary</p>
                 <h3 id="tripTitle">5天4夜｜東京親子之旅</h3>
               </div>
               <span class="budget-pill" id="budgetPill">預算友善</span>
@@ -153,15 +146,15 @@
               <aside class="recommendations">
                 <div class="tab-panel" id="tabPanel"></div>
                 <section class="booking-panel" aria-label="Travel recommendations">
-                  <article class="booking-card">
-                    <h4>航班推薦</h4>
-                    <p><strong>TPE → NRT</strong> 08:40 - 12:55｜SkyJet SJ802</p>
-                    <p><strong>NRT → TPE</strong> 18:20 - 21:50｜SkyJet SJ817</p>
-                    <p>估計票價：NT$ 13,800 / 人</p>
+                  <article class="booking-card" id="flightCard">
+                    <h4 id="flightCardTitle">航班推薦</h4>
+                    <p id="flightOutbound"><strong>TPE → NRT</strong> 08:40 - 12:55｜SkyJet SJ802</p>
+                    <p id="flightInbound"><strong>NRT → TPE</strong> 18:20 - 21:50｜SkyJet SJ817</p>
+                    <p id="flightPrice">估計票價：NT$ 13,800 / 人</p>
                     <button class="booking-action" id="bookFlight" type="button">訂機票</button>
                   </article>
-                  <article class="booking-card">
-                    <h4>飯店推薦</h4>
+                  <article class="booking-card" id="hotelCard">
+                    <h4 id="hotelCardTitle">飯店推薦</h4>
                     <p><strong>Ueno Garden Family Hotel</strong></p>
                     <p>上野站步行 6 分鐘｜家庭房｜含早餐</p>
                     <p>估計房價：NT$ 5,200 / 晚</p>
@@ -207,8 +200,8 @@
             <article class="summary-card">
               <h3>機票</h3>
               <p id="summaryFlightStatus">已選擇航班方案</p>
-              <p>TPE → NRT｜08:40 - 12:55｜SkyJet SJ802</p>
-              <p>NRT → TPE｜18:20 - 21:50｜SkyJet SJ817</p>
+              <p id="summaryFlightOutbound">TPE → NRT｜08:40 - 12:55｜SkyJet SJ802</p>
+              <p id="summaryFlightInbound">NRT → TPE｜18:20 - 21:50｜SkyJet SJ817</p>
             </article>
             <article class="summary-card">
               <h3>飯店</h3>
