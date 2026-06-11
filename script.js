@@ -534,7 +534,7 @@ function sendAgentChat() {
     renderResults();
     renderSummary();
     highlightDay(4);
-    addChatMessage("已更新：\nSHIBUYA SKY 有名的在他的夜景, 我幫你安排在 Day 4 傍晚前往, 可以同時欣賞到傍晚跟晚上的景色。", "agent-message");
+    addChatMessage("已更新：\nSHIBUYA SKY 有名的在它的夜景, 幫你安排在 Day 4 傍晚前往, 可以同時欣賞到傍晚跟晚上的景色。", "agent-message");
     sendChat.disabled = false;
   }, 1200);
 }

@@ -854,11 +854,20 @@ textarea {
 .floating-chat span {
   display: grid;
   place-items: center;
-  width: 44px;
-  height: 34px;
-  border-radius: 16px;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
   background: rgba(255, 255, 255, 0.16);
-  font-weight: 900;
+}
+
+.assistant-icon {
+  width: 28px;
+  height: 28px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 
 .chat-panel {

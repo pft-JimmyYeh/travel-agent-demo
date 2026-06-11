@@ -25,7 +25,7 @@
           <article class="stage-panel input-panel">
             <div class="field-group">
               <label for="destination">目的地</label>
-              <input id="destination" name="destination" value="" placeholder="" autocomplete="off">
+              <input id="destination" name="destination" value="東京" placeholder="" autocomplete="off">
             </div>
 
             <div class="field-group">
@@ -70,7 +70,7 @@
 
             <div class="field-group">
               <label for="spotInput">想去的景點</label>
-              <textarea id="spotInput" name="spotInput" rows="4" placeholder=""></textarea>
+              <textarea id="spotInput" name="spotInput" rows="4" placeholder="">淺草寺、晴空塔、迪士尼</textarea>
             </div>
 
             <button class="primary-action" id="startPlan" type="button">開始規劃</button>
@@ -181,7 +181,17 @@
           </div>
 
           <button class="floating-chat" id="openChat" type="button" aria-label="開啟 Agent Chat">
-            <span aria-hidden="true">AI</span>
+            <span aria-hidden="true">
+              <svg class="assistant-icon" viewBox="0 0 24 24" focusable="false">
+                <path d="M12 3.5v2.25"></path>
+                <path d="M8 13h.01"></path>
+                <path d="M16 13h.01"></path>
+                <path d="M9 17c.8.55 1.8.85 3 .85s2.2-.3 3-.85"></path>
+                <rect x="4.5" y="7" width="15" height="13" rx="4"></rect>
+                <path d="M2.75 12.25v2.5"></path>
+                <path d="M21.25 12.25v2.5"></path>
+              </svg>
+            </span>
           </button>
         </article>
       </section>
