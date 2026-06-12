@@ -171,13 +171,9 @@ h1 {
 .initial-loading-panel {
   display: grid;
   place-items: center;
-  gap: 14px;
+  gap: 21px;
   width: min(760px, 100%);
   min-height: 220px;
-  border: 1px solid rgba(198, 217, 255, 0.92);
-  border-radius: 8px;
-  background: var(--panel);
-  box-shadow: 0 16px 42px rgba(23, 71, 163, 0.1);
   padding: 26px;
   text-align: center;
 }
@@ -185,6 +181,7 @@ h1 {
 .initial-loading-panel p {
   margin: 0;
   color: var(--muted);
+  font-size: 1.5rem;
   font-weight: 800;
 }
 
@@ -652,10 +649,10 @@ textarea {
 }
 
 .loader-dot {
-  width: 42px;
-  height: 42px;
+  width: 63px;
+  height: 63px;
   border-radius: 50%;
-  border: 6px solid #dceaff;
+  border: 9px solid #dceaff;
   border-top-color: var(--blue);
   animation: spin 1s linear infinite;
 }
