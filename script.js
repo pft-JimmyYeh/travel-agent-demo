@@ -151,6 +151,8 @@ const summaryDates = document.querySelector("#summaryDates");
 const summaryBudgetTotal = document.querySelector("#summaryBudgetTotal");
 const summaryBudgetBreakdown = document.querySelector("#summaryBudgetBreakdown");
 const summaryAdjustment = document.querySelector("#summaryAdjustment");
+const departButton = document.querySelector("#departButton");
+const departureOverlay = document.querySelector("#departureOverlay");
 const openChat = document.querySelector("#openChat");
 const closeChat = document.querySelector("#closeChat");
 const chatPanel = document.querySelector("#chatPanel");
@@ -177,6 +179,8 @@ let isChatComposing = false;
 let selectedFlight = "skyjet";
 let flightBookingTimer = null;
 let hotelBookingTimer = null;
+let hasDeparted = false;
+let isDeparting = false;
 
 const highlightDuration = 5000;
 const bookingPendingDuration = 2000;
@@ -209,7 +213,9 @@ function renderResults() {
     : "日期未指定";
   tripTitle.textContent = trip.title.replace("東京", destination);
   budgetPill.textContent = budgetSelect.value;
-  resultSubtitle.textContent = `${destination}・${trip.label}・${budgetSelect.value}・${adults}大${children}小・${dateRange}`;
+  resultSubtitle.textContent = hasDeparted
+    ? dateRange
+    : `${destination}・${trip.label}・${budgetSelect.value}・${adults}大${children}小・${dateRange}`;
   const days = trip.days.map((day, index) => {
     if (shibuyaSkyUpdated && index === 3) {
       return ["鎌倉與澀谷夜景", "江之電、海邊散步後回東京，傍晚安排 SHIBUYA SKY。"];
@@ -232,6 +238,25 @@ function renderResults() {
 
 function renderTabPanel() {
   const trip = getTrip();
+  if (hasDeparted) {
+    tabPanel.innerHTML = Object.entries(tabLabels).map(([key, label]) => {
+      const items = trip.panels[key];
+      return `
+        <article class="departure-info-card">
+          <h4>${label}</h4>
+          <ul>
+            ${items.map((item) => {
+              const parts = item.split("：");
+              return parts.length > 1
+                ? `<li><strong>${parts[0]}：</strong>${parts.slice(1).join("：")}</li>`
+                : `<li>${item}</li>`;
+            }).join("")}
+          </ul>
+        </article>
+      `;
+    }).join("");
+    return;
+  }
   const items = trip.panels[selectedTab];
   tabPanel.innerHTML = `
     <h4>${tabLabels[selectedTab]}</h4>
@@ -278,11 +303,19 @@ function highlightDay(dayNumber) {
   }, highlightDuration);
 }
 
+function getDefaultChatPrompt() {
+  return hasDeparted ? "有什麼我可以幫你的？" : "想調整哪一段行程？";
+}
+
+function renderDefaultChatPrompt() {
+  chatMessages.innerHTML = `<p class="agent-message">${getDefaultChatPrompt()}</p>`;
+}
+
 function resetChat() {
   chatPanel.classList.add("is-hidden");
   chatInput.value = "";
   sendChat.disabled = false;
-  chatMessages.innerHTML = '<p class="agent-message">想調整哪一段行程？</p>';
+  renderDefaultChatPrompt();
 }
 
 function resetAppState() {
@@ -303,6 +336,8 @@ function resetAppState() {
   hotelBooked = false;
   flightBookingPending = false;
   hotelBookingPending = false;
+  hasDeparted = false;
+  isDeparting = false;
   shibuyaSkyUpdated = false;
   selectedFlight = "skyjet";
 
@@ -322,6 +357,9 @@ function resetAppState() {
   startPlan.disabled = false;
   startPlan.textContent = "開始規劃";
   flightCard.classList.remove("is-highlighted");
+  resultContent.classList.remove("is-departed");
+  resultView.classList.remove("is-departed");
+  departureOverlay.classList.add("is-hidden");
   timeline.querySelectorAll(".day-item").forEach((item) => item.classList.remove("is-highlighted"));
 
   resetAgentSteps();
@@ -407,6 +445,12 @@ function completeAgentStep(index) {
   });
 }
 
+function wait(ms) {
+  return new Promise((resolve) => {
+    window.setTimeout(resolve, ms);
+  });
+}
+
 async function continuePlanningAfterPeople() {
   if (!waitingForPeople) return;
   const adults = Math.max(1, Number(adultCount.value) || 1);
@@ -425,6 +469,7 @@ async function continuePlanningAfterPeople() {
     await completeAgentStep(index);
   }
 
+  await wait(2000);
   renderResults();
   startPlan.disabled = false;
   startPlan.textContent = "開始規劃";
@@ -443,6 +488,8 @@ function renderBookingState() {
   bookHotel.classList.toggle("is-booked", hotelBooked);
   bookFlight.classList.toggle("is-processing", flightBookingPending);
   bookHotel.classList.toggle("is-processing", hotelBookingPending);
+  resultContent.classList.toggle("is-departed", hasDeparted);
+  resultView.classList.toggle("is-departed", hasDeparted);
 }
 
 function renderSummary() {
@@ -471,6 +518,23 @@ function renderSummary() {
   summaryAdjustment.textContent = shibuyaSkyUpdated ? "已更新：SHIBUYA SKY 安排在傍晚前往" : "尚未調整行程";
   summaryBudgetTotal.textContent = `NT$ ${totalBudget.toLocaleString("en-US")}`;
   summaryBudgetBreakdown.textContent = `機票 NT$ ${flightBudget.toLocaleString("en-US")}｜飯店 NT$ ${hotelBudget.toLocaleString("en-US")}｜餐飲交通 NT$ ${dailyBudget.toLocaleString("en-US")}`;
+  departButton.classList.toggle("is-hidden", !(flightBooked && hotelBooked) || hasDeparted);
+  departButton.disabled = isDeparting;
+}
+
+function departTrip() {
+  if (!flightBooked || !hotelBooked || hasDeparted || isDeparting) return;
+  isDeparting = true;
+  departButton.disabled = true;
+  departureOverlay.classList.remove("is-hidden");
+  window.setTimeout(() => {
+    hasDeparted = true;
+    isDeparting = false;
+    departureOverlay.classList.add("is-hidden");
+    resetChat();
+    renderResults();
+    showResultView();
+  }, 3000);
 }
 
 function addChatMessage(text, className) {
@@ -482,6 +546,10 @@ function addChatMessage(text, className) {
 }
 
 function openAgentChat() {
+  const messages = chatMessages.querySelectorAll("p");
+  if (messages.length === 1 && messages[0].classList.contains("agent-message")) {
+    renderDefaultChatPrompt();
+  }
   chatPanel.classList.remove("is-hidden");
   chatInput.focus();
 }
@@ -574,6 +642,7 @@ bookFlight.addEventListener("click", () => {
     flightBooked = true;
     flightBookingTimer = null;
     renderBookingState();
+    renderSummary();
   }, bookingPendingDuration);
 });
 bookHotel.addEventListener("click", () => {
@@ -585,9 +654,11 @@ bookHotel.addEventListener("click", () => {
     hotelBooked = true;
     hotelBookingTimer = null;
     renderBookingState();
+    renderSummary();
   }, bookingPendingDuration);
 });
 showSummary.addEventListener("click", showSummaryView);
+departButton.addEventListener("click", departTrip);
 openChat.addEventListener("click", openAgentChat);
 closeChat.addEventListener("click", closeAgentChat);
 sendChat.addEventListener("click", sendAgentChat);

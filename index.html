@@ -87,12 +87,7 @@
           </header>
 
           <div class="agent-visual" aria-hidden="true">
-            <div class="bot-face">
-              <span></span>
-              <span></span>
-            </div>
-            <div class="orbit orbit-a"></div>
-            <div class="orbit orbit-b"></div>
+            <img src="assets/agent-analysis.png" alt="">
           </div>
 
           <ol class="agent-steps" id="agentSteps">
@@ -233,8 +228,16 @@
             </article>
           </div>
 
+          <button class="depart-action is-hidden" id="departButton" type="button">出發</button>
         </article>
       </section>
+
+      <div class="departure-overlay is-hidden" id="departureOverlay" aria-live="polite" aria-label="準備出發">
+        <div class="departure-loader">
+          <img src="assets/departure-ready.png" alt="AI travel assistant ready to depart">
+          <p>準備出發...</p>
+        </div>
+      </div>
     </main>
 
     <script src="script.js"></script>

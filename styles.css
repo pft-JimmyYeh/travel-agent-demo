@@ -488,53 +488,11 @@ textarea {
   min-height: 170px;
 }
 
-.bot-face {
-  position: relative;
-  z-index: 2;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 18px;
-  width: 118px;
-  height: 86px;
-  border-radius: 28px;
-  background: linear-gradient(145deg, #06183f, #113d82);
-  box-shadow: 0 18px 34px rgba(6, 24, 63, 0.22);
-}
-
-.bot-face::before {
-  content: "";
-  position: absolute;
-  width: 158px;
-  height: 116px;
-  border-radius: 34px;
-  background: linear-gradient(135deg, #e8f2ff, #ffffff);
-  z-index: -1;
-}
-
-.bot-face span {
-  width: 20px;
-  height: 10px;
-  border: solid var(--cyan);
-  border-width: 0 0 4px;
-  border-radius: 0 0 18px 18px;
-}
-
-.orbit {
-  position: absolute;
-  border: 1px dashed rgba(36, 107, 255, 0.28);
-  border-radius: 50%;
-}
-
-.orbit-a {
-  width: 170px;
-  height: 170px;
-}
-
-.orbit-b {
-  width: 230px;
-  height: 104px;
-  transform: rotate(-18deg);
+.agent-visual img {
+  width: min(260px, 72vw);
+  height: auto;
+  animation: departure-float 1.45s ease-in-out infinite;
+  filter: drop-shadow(0 18px 28px rgba(6, 24, 63, 0.14));
 }
 
 .agent-steps {
@@ -729,11 +687,36 @@ textarea {
   font-weight: 900;
 }
 
+.result-view.is-departed .result-nav h2,
+.result-content.is-departed .budget-pill {
+  display: none;
+}
+
 .tabs {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 8px;
   margin: 16px 0;
+}
+
+.result-content.is-departed .tabs,
+.result-content.is-departed .booking-panel {
+  display: none;
+}
+
+.result-content.is-departed .tab-panel {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  min-height: 0;
+  border: 0;
+  background: transparent;
+  padding: 0;
+}
+
+.result-content.is-departed .day-item[data-day="1"] {
+  border-color: var(--green);
+  box-shadow: 0 0 0 3px rgba(19, 185, 129, 0.14);
 }
 
 .result-layout {
@@ -1026,6 +1009,76 @@ textarea {
   color: var(--ink);
 }
 
+.departure-info-card {
+  min-width: 0;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+  padding: 12px;
+}
+
+.departure-info-card h4 {
+  margin: 0 0 10px;
+}
+
+.depart-action {
+  width: min(360px, 100%);
+  min-height: 48px;
+  margin: 18px auto 0;
+  display: block;
+  border: 0;
+  border-radius: 8px;
+  color: #fff;
+  background: linear-gradient(135deg, #0f9f6e, var(--green));
+  font-weight: 900;
+  box-shadow: 0 14px 28px rgba(19, 185, 129, 0.25);
+}
+
+.depart-action:disabled {
+  cursor: wait;
+  opacity: 0.72;
+}
+
+.depart-action.is-hidden {
+  display: none;
+}
+
+.departure-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: rgba(246, 249, 255, 0.74);
+  backdrop-filter: blur(8px);
+}
+
+.departure-overlay.is-hidden {
+  display: none;
+}
+
+.departure-loader {
+  display: grid;
+  place-items: center;
+  gap: 12px;
+  text-align: center;
+}
+
+.departure-loader img {
+  width: min(320px, 72vw);
+  height: auto;
+  animation: departure-float 1.25s ease-in-out infinite;
+  filter: drop-shadow(0 22px 34px rgba(6, 24, 63, 0.2));
+}
+
+.departure-loader p {
+  margin: 0;
+  color: var(--ink);
+  font-size: 1.08rem;
+  font-weight: 900;
+}
+
 .value-strip {
   grid-template-columns: repeat(4, 1fr);
   margin-top: 18px;
@@ -1126,6 +1179,17 @@ textarea {
   }
 }
 
+@keyframes departure-float {
+  0%,
+  100% {
+    transform: translateY(0) scale(1);
+  }
+
+  50% {
+    transform: translateY(-12px) scale(1.04);
+  }
+}
+
 @media (max-width: 1180px) {
   .planner-grid {
     grid-template-columns: 1fr;
@@ -1179,6 +1243,7 @@ textarea {
   .tabs,
   .booking-panel,
   .result-layout,
+  .result-content.is-departed .tab-panel,
   .summary-grid,
   .value-strip {
     grid-template-columns: 1fr;
