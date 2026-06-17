@@ -711,9 +711,10 @@ textarea {
   padding: 0;
 }
 
-.result-content.is-departed .day-item[data-day="1"] {
+.result-content.is-departed .day-item[data-day="2"] {
+  border-width: 3px;
   border-color: var(--green);
-  box-shadow: 0 0 0 3px rgba(19, 185, 129, 0.14);
+  box-shadow: 0 0 0 5px rgba(19, 185, 129, 0.2);
 }
 
 .result-layout {
