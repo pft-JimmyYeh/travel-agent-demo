@@ -179,6 +179,9 @@ let isChatComposing = false;
 let selectedFlight = "skyjet";
 let flightBookingTimer = null;
 let hotelBookingTimer = null;
+let departureHighlightTimer = null;
+let departureHighlightDay = null;
+let isDepartureHighlightArriving = false;
 let hasDeparted = false;
 let isDeparting = false;
 
@@ -231,6 +234,7 @@ function renderResults() {
       </div>
     </article>
   `).join("");
+  applyDepartureDayHighlight();
   renderTabPanel();
   renderBookingState();
   renderSummary();
@@ -303,6 +307,54 @@ function highlightDay(dayNumber) {
   }, highlightDuration);
 }
 
+function applyDepartureDayHighlight() {
+  timeline.querySelectorAll(".day-item").forEach((item) => {
+    item.classList.remove("is-departure-highlight", "is-highlight-arriving");
+  });
+  if (!departureHighlightDay) return;
+  const dayItem = timeline.querySelector(`[data-day="${departureHighlightDay}"]`);
+  if (!dayItem) return;
+  dayItem.classList.add("is-departure-highlight");
+  if (isDepartureHighlightArriving) {
+    dayItem.classList.add("is-highlight-arriving");
+  }
+}
+
+function clearDepartureDayHighlight() {
+  if (departureHighlightTimer) {
+    window.clearTimeout(departureHighlightTimer);
+    departureHighlightTimer = null;
+  }
+  departureHighlightDay = null;
+  isDepartureHighlightArriving = false;
+  applyDepartureDayHighlight();
+}
+
+function setDepartureDayHighlight(dayNumber, animateArrival = false) {
+  departureHighlightDay = dayNumber;
+  isDepartureHighlightArriving = animateArrival;
+  applyDepartureDayHighlight();
+}
+
+function holdDepartureDayHighlight() {
+  if (!departureHighlightDay) return;
+  if (departureHighlightTimer) {
+    window.clearTimeout(departureHighlightTimer);
+    departureHighlightTimer = null;
+  }
+  isDepartureHighlightArriving = false;
+  applyDepartureDayHighlight();
+}
+
+function startDepartureDayHighlight() {
+  clearDepartureDayHighlight();
+  setDepartureDayHighlight(1);
+  departureHighlightTimer = window.setTimeout(() => {
+    departureHighlightTimer = null;
+    setDepartureDayHighlight(2, true);
+  }, 1000);
+}
+
 function getDefaultChatPrompt() {
   return hasDeparted ? "有什麼我可以幫你的？" : "想調整哪一段行程？";
 }
@@ -327,6 +379,7 @@ function resetAppState() {
     window.clearTimeout(hotelBookingTimer);
     hotelBookingTimer = null;
   }
+  clearDepartureDayHighlight();
 
   selectedStyle = "family";
   selectedTab = "map";
@@ -534,6 +587,7 @@ function departTrip() {
     resetChat();
     renderResults();
     showResultView();
+    window.requestAnimationFrame(startDepartureDayHighlight);
   }, 3000);
 }
 
@@ -599,6 +653,7 @@ function sendAgentChat() {
   addChatMessage("正在更新行程規劃...", "agent-message");
   window.setTimeout(() => {
     shibuyaSkyUpdated = true;
+    holdDepartureDayHighlight();
     renderResults();
     renderSummary();
     highlightDay(4);
